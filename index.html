@@ -3,25 +3,15 @@
   <head>
     <title>Sinusoid</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <!--<script type='type/javascript' src='http://github.com/jashkenas/coffee-script/raw/master/extras/coffee-script.js'></script>
-    <script type='text/coffeescript' src='sinusoid.coffee'></script>-->
-    <script type='text/javascript' src='script/engine.js'></script>
-    <script type='text/javascript' src='script/util.js'></script>
-    <script type='text/javascript' src='script/signals.js'></script>
-    <script type='text/javascript' src='script/instruments.js'></script>
-    <script type='text/javascript' src='script/music.js'></script>
-    <script type='text/javascript' src='script/sinusoid.js'></script>
-    <script type='text/javascript' src='script/sarias_song.js'></script>
-    <script type='text/javascript' src='script/asian_riff.js'></script>
-<style>
-textarea {
-  width: 100%;
-  min-height: 300px;
-}
-</style>
-    <textarea id='song_textarea'>sarias_song</textarea>
-    <button id='play_button'>Play</button>
+    <!-- TODO: access livescript in a better way -->
+    <script type='text/javascript' src='LiveScript/browser/livescript-min.js'></script>
+    <script type='text/javascript'>window.livescript = require('livescript');</script>
+
+    <div id='root'></div>
+
+    <script type='text/javascript' src='bundle.js'></script>
   </body>
 </html>

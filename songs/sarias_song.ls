@@ -1,20 +1,21 @@
 bpm = 280
 
-measure1 = memoize melody(bpm, [
-  [0, bleep 77]
-  [1, bleep 81]
-  [2, bleep 83]
+measure1 = memoize render_notes(bpm, [
+  [0, bloop 77]
+  [1, bloop 81]
+  [2, bloop 83]
 ])
 
-drums = melody(bpm, [
-  [0.0, tsch()]
-  [1.0, tsch()]
-  [1.5, tsch()]
-  [2.0, tsch()]
-  [3.0, tsch()]
+sch = tsch() |> gain(0.3, _)
+drums = memoize render_notes(bpm, [
+  [0.0, sch]
+  [1.0, sch]
+  [1.5, sch]
+  [2.0, sch]
+  [3.0, sch]
 ])
 
-drumline = melody(bpm, [
+drumline = memoize render_notes(bpm, [
   [0, drums]
   [4, drums]
   [8, drums]
@@ -25,41 +26,44 @@ drumline = melody(bpm, [
   [28, drums]
 ])
 
-window.sarias_song = memoize melody(bpm, [
-  [0, drumline]
-  [32, drumline]
-
+ocarina = memoize render_notes(bpm, [
   [0, measure1]
   [4, measure1]
   [8, measure1]
-  [11, bleep 88]
-  [12, bleep 86]
+  [11, bloop 88]
+  [12, bloop 86]
 
-  [14, bleep 83]
-  [15, bleep 84]
-  [16, bleep 83]
-  [17, bleep 79]
-  [18, bleep 76]
+  [14, bloop 83]
+  [15, bloop 84]
+  [16, bloop 83]
+  [17, bloop 79]
+  [18, bloop 76]
 
-  [23, bleep 74]
-  [24, bleep 76]
-  [25, bleep 79]
-  [26, bleep 76]
+  [23, bloop 74]
+  [24, bloop 76]
+  [25, bloop 79]
+  [26, bloop 76]
 
   [32, measure1]
   [36, measure1]
   [40, measure1]
-  [43, bleep 88]
-  [44, bleep 86]
+  [43, bloop 88]
+  [44, bloop 86]
 
-  [46, bleep 83]
-  [47, bleep 84]
-  [48, bleep 88]
-  [49, bleep 84]
-  [50, bleep 79]
+  [46, bloop 83]
+  [47, bloop 84]
+  [48, bloop 88]
+  [49, bloop 84]
+  [50, bloop 79]
 
-  [55, bleep 83]
-  [56, bleep 79]
-  [57, bleep 74]
-  [58, bleep 76]
+  [55, bloop 83]
+  [56, bloop 79]
+  [57, bloop 74]
+  [58, bloop 76]
+])
+
+return memoize render_notes(bpm, [
+  [0, drumline]
+  [32, drumline]
+  [0, ocarina]
 ])

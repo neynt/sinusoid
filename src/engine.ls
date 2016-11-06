@@ -4,31 +4,85 @@
 audioCtx = (new (window.AudioContext || window.webkitAudioContext))
 sampleRate = audioCtx.sampleRate
 
-# Plays the first (duration) seconds of (song).
-# song: time -> [0.0, 1.0]
-# duration: time
-window.play = (song, duration) ->
-  time_start = performance.now()
-  console.log("Rendering began at #{time_start}")
+class SongEngine
+  @colors = [
+    'rgba(255, 0, 0, 0.5)'
+    'rgba(0, 0, 255, 0.5)'
+    'rgba(128, 128, 0, 0.5)'
+  ]
+  ->
+    window.addEventListener "load", ->
+      rendering_status = document.getElementById('rendering_status')
+    @listeners = []
+    @channels = []
 
-  channels = 2
-  frameCount = sampleRate * duration
-  myArrayBuffer = audioCtx.createBuffer(channels, frameCount, sampleRate)
+  render_song: (song, duration) ->
+    time_start = performance.now()
+    console.log("rendering")
 
-  for channel from 0 til channels
-    nowBuffering = myArrayBuffer.getChannelData(channel)
-    for i from 0 til frameCount
-      nowBuffering[i] = song(i / sampleRate)
+    if Array.isArray(song)
+      console.log("solo yolo")
+      num_channels = song.length
+    else
+      num_channels = 1
+      song = [song]
 
-  source = audioCtx.createBufferSource()
-  source.buffer = myArrayBuffer
-  source.connect(audioCtx.destination)
-  source.start()
+    frameCount = sampleRate * duration
+    myArrayBuffer = audioCtx.createBuffer(num_channels, frameCount, sampleRate)
+    chunkSize = Math.round(sampleRate)
 
-  time_end = performance.now()
-  console.log("Rendering ended at #{time_end}")
-  console.log("Rendering #{duration} seconds of audio took #{(time_end - time_start) / 1000.0} seconds")
+    var cur_buffering
+
+    @channels = [myArrayBuffer.getChannelData(c) for c from 0 til num_channels]
+    window.ch = @channels # TODO remove
+
+    self = this
+    render_from = (start, cur_channel) ->
+      end = Math.min(start + chunkSize, frameCount)
+      for i from start til end
+        self.channels[cur_channel][i] = song[cur_channel](i / sampleRate)
+
+      completion = (start + cur_channel * num_channels) / (num_channels * frameCount)
+      rendering_status.innerHTML = "#{(completion*100).toFixed(0)}%"
+
+      if end == frameCount and cur_channel + 1 < num_channels
+        setTimeout(-> render_from(0, cur_channel + 1))
+      else if end < frameCount
+        setTimeout(-> render_from(start + chunkSize, cur_channel))
+      else
+        # TODO: Get this outta here!
+        rendering_status.innerHTML = "100%"
+        source = audioCtx.createBufferSource()
+        window.buf = source.buffer = myArrayBuffer
+        source.connect(audioCtx.destination)
+        source.start()
+        time_end = performance.now()
+        console.log("rendering #{duration} seconds of audio took #{((time_end - time_start) / 1000.0).toFixed(2)} seconds")
+        for f in self.listeners
+          f()
+
+    render_from(0, 0)
+
+  add_listener: (f) ->
+    @listeners.push f
+
+  redraw_canvas: (canvas) ->
+    const width = canvas.width = canvas.offsetWidth
+    const height = canvas.height = canvas.offsetHeight
+    const ctx = canvas.getContext '2d'
+    ctx.fillStyle = '#000'
+    ctx.fillRect 0, 0, width, height
+    const num_samples = Math.max(@channels.map (.length))
+    for c from 0 til @channels.length
+      ctx.strokeStyle = @@colors[c % @@colors.length]
+      ctx.moveTo 0, height / 2
+      for i from 0 til @channels[c].length
+        x = i / num_samples * width
+        y = height * 1/2 * (1 - @channels[c][i])
+        ctx.lineTo x, y
+      ctx.stroke()
 
 window.engine =
   sample_rate: sampleRate
-  play: play
+
+window.SongEngine = SongEngine
