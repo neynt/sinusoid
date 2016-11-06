@@ -2,7 +2,7 @@
 
 A sound is just a function from time to [-1, 1].
 
-Sinusoid a set of expressive tools to write these functions.
+Sinusoid is an expressive framework to write these functions.
 
 ## Notes
 
