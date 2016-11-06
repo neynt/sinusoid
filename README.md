@@ -1,5 +1,9 @@
 # Sinusoid
 
-Every piece of music can be expressed as a function from time to [-1,1].
+A sound is just a function from time to [-1, 1].
 
-Sinusoid tries to give you the tools to write these functions as expressively as possible.
+Sinusoid a set of expressive tools to write these functions.
+
+## Notes
+
+We currently use `|> gain(0.5, _)` instead of currying `gain` and using `|> gain 0.5` because currying in LiveScript is slow.
