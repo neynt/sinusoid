@@ -13,7 +13,7 @@ class EditorSettings extends React.Component {
         <select>
           <option>LiveScript</option>
         </select>
-        <button id="play_button">Play</button>
+        <button id="play_button">Ctrl+Enter to play</button>
         <span id="rendering_status"></span>
       </div>
     );
