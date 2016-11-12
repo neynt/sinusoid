@@ -42,11 +42,6 @@ window.chirp_exp = (freq1, freq2, T) ->
 # White noise
 window.noise = -> (t) -> Math.random() * 2 - 1
 
-# Violet noise
-window.noise_violet = ->
-  white = memoize noise()
-  (t) -> (white(t + 1 / 44100) - white(t)) / 2
-
 # ADSR envelope
 # params are [attack, delay, sustain, release] x [level, time]
 # crop for efficiency
@@ -116,3 +111,10 @@ window.pluses = (ss) ->
 window.envelope = (s1, s2) ->
   (t) -> s1(t) * s2(t)
   |> crop(Math.min(dur(s1), dur(s2)), _)
+
+exports = module.exports = {
+  sine, cosine, triangle, square, solid,
+  vibrato, chirp_lin, chirp_exp, noise,
+  adsr, soft_edges, tremolo, gain, gain_db,
+  delay, crop, plus, pluses, envelope
+}

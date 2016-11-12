@@ -1,6 +1,10 @@
 # Instruments are functions that take a MIDI note number and possibly other
 # parameters and returns a signal that represents playing that instrument
 # at a given pitch.
+
+{sine, triangle, square, noise} = signals
+{envelope, vibrato, chirp_exp, adsr, tremolo, gain_db} = signals
+
 # Other utilities that represent domain musical knowledge go here.
 # midi number to frequency
 midi = (n) -> 440 * Math.pow(2, (n - 69) / 12)
