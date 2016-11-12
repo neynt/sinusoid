@@ -1,7 +1,7 @@
 # Render melody
 # combines collection of [offset, signal] pairs
 # to a single signal at a particular bpm
-window.render_notes = (bpm, notes) ->
+render_notes = (bpm, notes) ->
   notes = [[ofs * 60 / bpm, s] for [ofs, s] in notes]
   seg_find = util.segment_finder([[ofs, ofs + dur(s), [ofs, s]] for [ofs, s] in notes])
   maxtime = Math.max.apply(null, [ofs + dur(s) for [ofs, s] in notes])
@@ -13,7 +13,7 @@ window.render_notes = (bpm, notes) ->
   |> crop maxtime, _
 
 # Converts a note from scientific pitch notation to MIDI integer
-window.note = do ->
+note = do ->
   note2semis =
     C: 0
     D: 2
@@ -31,7 +31,7 @@ window.note = do ->
 # A temperament maps note index to fundamental frequency.
 # e.g.
 # equal temperament: 69 -> 440, 81 -> 880
-window.temperament =
+temperament =
   equal: (note) -> 440 * Math.pow(2, (n - 69) / 12)
 
 # A key maps note index relative to the root to an
@@ -40,7 +40,7 @@ window.temperament =
 # A4 major: 0 -> 69, 1 -> 71
 # TODO: make this faster
 mod = (n, m) -> ((n % m) + m) % m
-window.key_from_deltas = (deltas) -> (root) -> (n) ->
+key_from_deltas = (deltas) -> (root) -> (n) ->
   ans = root
   cur_idx = 0
   while cur_idx < n
@@ -51,7 +51,7 @@ window.key_from_deltas = (deltas) -> (root) -> (n) ->
     ans -= deltas[mod(cur_idx, deltas.length)]
   ans
 
-window.key =
+key =
   major: key_from_deltas [2 2 1 2 2 2 1]
   natural_minor: key_from_deltas [2 1 2 2 1 2 2]
   harmonic_minor: key_from_deltas [2 1 2 2 1 3 1]
@@ -83,15 +83,29 @@ window.difference_array = (a) ->
     a[i] - a[i - 1]
 
 chord_deltas =
-  major_triad: [4 3 5]
-  minor_triad: [3 4 5]
+  major_triad: [4 3 5]  # III
+  minor_triad: [3 4 5]  # iii
+  diminished_triad: [3 3 6]  # III+
+  augmented_triad: [4 4 4]  # iiio
 
-window.chord = (root, name) ->
+chord = (root, name) ->
   lower_name = name.toLowerCase()
   if chord_deltas[name]?
     (key_from_deltas chord_deltas[name]) root
 
-window.roman_chord = (key, name) ->
+roman_chord = (key, name) ->
+  lower_name = name.toLowerCase()
+  root = (from_roman lower_name) - 1
+  type = ''
+  if name[0] == lower_name[0]
+    type = 'minor'
+    deltas = chord_deltas.minor_triad
+  else
+    type = 'major'
+    deltas = chord_deltas.major_triad
+  (key_from_deltas deltas) (key root)
+
+delta_chord = (key, name) ->
   lower_name = name.toLowerCase()
   root = (from_roman lower_name) - 1
   arr = [
@@ -108,10 +122,16 @@ window.roman_chord = (key, name) ->
   (key_from_deltas deltas) (key root)
 
 # A4: 69
-window.melody = (instrument, notes) ->
+melody = (instrument, notes) ->
   accum = 0
   res = []
   for [d, n] in notes
     res.push [accum, instrument n]
     accum += d
   res
+
+exports = module.exports = {
+  render_notes, note,
+  key, key_from_deltas, temperament,
+  chord, roman_chord, delta_chord
+};
