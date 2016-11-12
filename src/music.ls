@@ -105,7 +105,7 @@ roman_chord = (key, name) ->
     deltas = chord_deltas.major_triad
   (key_from_deltas deltas) (key root)
 
-delta_chord = (key, name) ->
+diatonic_chord = (key, name) ->
   lower_name = name.toLowerCase()
   root = (from_roman lower_name) - 1
   arr = [
@@ -133,5 +133,5 @@ melody = (instrument, notes) ->
 exports = module.exports = {
   render_notes, note,
   key, key_from_deltas, temperament,
-  chord, roman_chord, delta_chord
+  chord, roman_chord, diatonic_chord
 };
