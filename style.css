@@ -29,6 +29,14 @@ button, select {
   border: 0;
   border-radius: 2px;
 }
+button:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+button:active {
+  opacity: 0.5;
+}
+
 body, textarea, button, select {
   font: 16px 'Inconsolata',monospace;
   color: #ccc;
