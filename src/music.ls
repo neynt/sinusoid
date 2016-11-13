@@ -8,9 +8,9 @@ render_notes = (bpm, notes) ->
   (t) ->
     accum = 0.0
     for [ofs, s] in seg_find(t)
-      accum += delay(ofs, s)(t)
+      accum += delay(ofs)(s)(t)
     accum
-  |> crop maxtime, _
+  |> crop maxtime
 
 # Converts a note from scientific pitch notation to MIDI integer
 note = do ->

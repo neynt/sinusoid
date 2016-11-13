@@ -4,21 +4,21 @@
 # Pure tones.
 window.sine = (f) ->
   (t) -> Math.sin(2 * Math.PI * f(t))
-  |> crop dur(f), _
+  |> crop dur(f)
 
 window.cosine = (f) ->
   (t) -> Math.cos(2 * Math.PI * f(t))
-  |> crop dur(f), _
+  |> crop dur(f)
 
 window.triangle = (f) ->
   (t) ->
     phase = ((f(t) % 1 + 1) % 1)
     if phase < 0.5 then phase * 4 - 1 else 3 - phase * 4
-  |> crop dur(f), _
+  |> crop dur(f)
 
 window.square = (f) ->
   (t) -> if ((f(t) % 1 + 1) % 1) < 0.5 then -1 else 1
-  |> crop dur(f), _
+  |> crop dur(f)
 
 window.solid = (freq) ->
   (t) -> freq * t
@@ -32,12 +32,12 @@ window.vibrato = (freq1, freq2, freqV) ->
 # Chirps: Pure tones that change frequency smoothly
 window.chirp_lin = (freq1, freq2, T) ->
   (t) -> (freq1 * t + (freq2 - freq1) / (2 * T) * t * t)
-  |> crop T, _
+  |> crop T
 
 window.chirp_exp = (freq1, freq2, T) ->
   (t) ->
     freq1 * T * Math.pow(freq2/freq1, t/T)/(Math.log(freq2/freq1))
-  |> crop T, _
+  |> crop T
 
 # White noise
 window.noise = -> (t) -> Math.random() * 2 - 1
@@ -60,12 +60,11 @@ window.adsr = (at, al, dt, sl, st, rt) ->
       return (((rt - t) * sl)) / rt
     else
       return 0
-  |> crop(at + dt + st + rt, _)
+  |> crop at + dt + st + rt
 
 window.soft_edges = (s1, soften_time=0.01) ->
-  envelope(
-    adsr(soften_time, 1, 0, 1, dur(s1) - 2*soften_time, soften_time)
-    s1)
+  adsr(soften_time, 1, 0, 1, dur(s1) - 2*soften_time, soften_time)
+  |> envelope s1
 
 window.tremolo = (freq, amp) ->
   baseline = 1 - amp/2
@@ -76,20 +75,20 @@ window.tremolo = (freq, amp) ->
 # These functions return processors.
 
 # increase/decrease volume
-window.gain = (mult, s1) ->
+window.gain = (mult) -> (s1) ->
   (t) -> mult * s1(t)
-  |> crop(dur(s1), _)
+  |> crop dur(s1)
 
-window.gain_db = (db, s1) ->
-  gain(Math.pow(10, db/20), s1)
+window.gain_db = (db) ->
+  gain Math.pow(10, db/20)
 
 # delay the start point
-window.delay = (delay, s1) ->
+window.delay = (delay) -> (s1) ->
   (t) -> if t >= delay then s1(t - delay) else 0
-  |> crop(Math.max(dur(s1) + delay, 0), _)
+  |> crop Math.max(dur(s1) + delay, 0)
 
 # limit the duration
-window.crop = (duration, s1) ->
+window.crop = (duration) -> (s1) ->
   res = (t) -> if t >= duration then 0 else s1(t)
   res.duration = duration
   res
@@ -97,7 +96,7 @@ window.crop = (duration, s1) ->
 # sum two signals
 window.plus = (s1, s2) ->
   (t) -> s1(t) + s2(t)
-  |> crop(Math.max(dur(s1), dur(s2)), _)
+  |> crop Math.max(dur(s1), dur(s2))
 
 window.pluses = (ss) ->
   (t) ->
@@ -105,12 +104,12 @@ window.pluses = (ss) ->
     for s in ss
       accum += s(t)
     accum
-  |> crop(Math.max.apply(null, [dur(s) for s in ss]), _)
+  |> crop Math.max.apply(null, [dur(s) for s in ss])
 
 # pointwise multiply a signal with another signal
-window.envelope = (s1, s2) ->
+window.envelope = (s1) -> (s2) ->
   (t) -> s1(t) * s2(t)
-  |> crop(Math.min(dur(s1), dur(s2)), _)
+  |> crop Math.min(dur(s1), dur(s2))
 
 exports = module.exports = {
   sine, cosine, triangle, square, solid,
