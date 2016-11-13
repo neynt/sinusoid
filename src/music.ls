@@ -1,14 +1,16 @@
 # Render melody
 # combines collection of [offset, signal] pairs
 # to a single signal at a particular bpm
+{crop, delay} = signals
+
 render_notes = (bpm, notes) ->
   notes = [[ofs * 60 / bpm, s] for [ofs, s] in notes]
-  seg_find = util.segment_finder([[ofs, ofs + dur(s), [ofs, s]] for [ofs, s] in notes])
+  seg_find = util.segment_finder([[ofs, ofs + dur(s), [ofs, s |> delay ofs]] for [ofs, s] in notes])
   maxtime = Math.max.apply(null, [ofs + dur(s) for [ofs, s] in notes])
   (t) ->
     accum = 0.0
     for [ofs, s] in seg_find(t)
-      accum += delay(ofs)(s)(t)
+      accum += s(t)
     accum
   |> crop maxtime
 

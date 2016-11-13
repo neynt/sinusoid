@@ -6,7 +6,7 @@ sampleRate = audioCtx.sampleRate
 
 class SongEngine
   @colors = [
-    'rgba(249, 38, 81, 0.2)'
+    'rgba(249, 38, 81, 1.0)'
     'rgba(0, 192, 255, 0.2)'
     'rgba(128, 128, 0, 0.2)'
   ]
@@ -102,6 +102,6 @@ class SongEngine
       ctx.stroke()
 
 window.engine =
-  sample_rate: sampleRate
+  sampleRate: sampleRate
 
 window.SongEngine = SongEngine

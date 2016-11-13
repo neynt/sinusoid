@@ -2,50 +2,50 @@
 # Signals are functions from time to [-1,1] with an optional duration.
 
 # Pure tones.
-window.sine = (f) ->
+sine = (f) ->
   (t) -> Math.sin(2 * Math.PI * f(t))
   |> crop dur(f)
 
-window.cosine = (f) ->
+cosine = (f) ->
   (t) -> Math.cos(2 * Math.PI * f(t))
   |> crop dur(f)
 
-window.triangle = (f) ->
+triangle = (f) ->
   (t) ->
     phase = ((f(t) % 1 + 1) % 1)
     if phase < 0.5 then phase * 4 - 1 else 3 - phase * 4
   |> crop dur(f)
 
-window.square = (f) ->
+square = (f) ->
   (t) -> if ((f(t) % 1 + 1) % 1) < 0.5 then -1 else 1
   |> crop dur(f)
 
-window.solid = (freq) ->
+solid = (freq) ->
   (t) -> freq * t
 
-window.vibrato = (freq1, freq2, freqV) ->
+vibrato = (freq1, freq2, freqV) ->
   freq_mid = (freq1 + freq2) / 2
   Vcos = sine(solid(freqV))
   Vamp = -(freq_mid - freq1) / (freqV * Math.PI * 2)
   (t) -> freq_mid * t + Vamp*Vcos(t)
 
 # Chirps: Pure tones that change frequency smoothly
-window.chirp_lin = (freq1, freq2, T) ->
+chirp_lin = (freq1, freq2, T) ->
   (t) -> (freq1 * t + (freq2 - freq1) / (2 * T) * t * t)
   |> crop T
 
-window.chirp_exp = (freq1, freq2, T) ->
+chirp_exp = (freq1, freq2, T) ->
   (t) ->
     freq1 * T * Math.pow(freq2/freq1, t/T)/(Math.log(freq2/freq1))
   |> crop T
 
 # White noise
-window.noise = -> (t) -> Math.random() * 2 - 1
+noise = -> (t) -> Math.random() * 2 - 1
 
 # ADSR envelope
 # params are [attack, delay, sustain, release] x [level, time]
 # crop for efficiency
-window.adsr = (at, al, dt, sl, st, rt) ->
+adsr = (at, al, dt, sl, st, rt) ->
   (t) ->
     if t <= at
       return t / at * al
@@ -62,11 +62,11 @@ window.adsr = (at, al, dt, sl, st, rt) ->
       return 0
   |> crop at + dt + st + rt
 
-window.soft_edges = (s1, soften_time=0.01) ->
+soft_edges = (s1, soften_time=0.01) ->
   adsr(soften_time, 1, 0, 1, dur(s1) - 2*soften_time, soften_time)
   |> envelope s1
 
-window.tremolo = (freq, amp) ->
+tremolo = (freq, amp) ->
   baseline = 1 - amp/2
   Vcos = cosine(solid(freq))
   (t) -> baseline + Vcos(t) * amp/2
@@ -75,30 +75,30 @@ window.tremolo = (freq, amp) ->
 # These functions return processors.
 
 # increase/decrease volume
-window.gain = (mult) -> (s1) ->
+gain = (mult) -> (s1) ->
   (t) -> mult * s1(t)
   |> crop dur(s1)
 
-window.gain_db = (db) ->
+gain_db = (db) ->
   gain Math.pow(10, db/20)
 
 # delay the start point
-window.delay = (delay) -> (s1) ->
+delay = (delay) -> (s1) ->
   (t) -> if t >= delay then s1(t - delay) else 0
-  |> crop Math.max(dur(s1) + delay, 0)
+  |> crop Math.max (dur s1) + delay, 0
 
 # limit the duration
-window.crop = (duration) -> (s1) ->
+crop = (duration) -> (s1) ->
   res = (t) -> if t >= duration then 0 else s1(t)
   res.duration = duration
   res
 
 # sum two signals
-window.plus = (s1, s2) ->
+plus = (s1, s2) ->
   (t) -> s1(t) + s2(t)
-  |> crop Math.max(dur(s1), dur(s2))
+  |> crop Math.max (dur s1), (dur s2)
 
-window.pluses = (ss) ->
+pluses = (ss) ->
   (t) ->
     accum = 0
     for s in ss
@@ -107,13 +107,28 @@ window.pluses = (ss) ->
   |> crop Math.max.apply(null, [dur(s) for s in ss])
 
 # pointwise multiply a signal with another signal
-window.envelope = (s1) -> (s2) ->
+envelope = (s1) -> (s2) ->
   (t) -> s1(t) * s2(t)
   |> crop Math.min(dur(s1), dur(s2))
+
+# muh convolutions
+# good for filters and reverb
+convolve = (sc) -> (s1) ->
+  (t) ->
+    accum = 0
+    for x, i in sc
+      accum += x * s1(t - i / engine.sampleRate)
+    accum
+  |> crop dur s1
+
+average_window = (T) ->
+  num_samples = Math.floor(T * engine.sampleRate)
+  [1 / num_samples] * num_samples
 
 exports = module.exports = {
   sine, cosine, triangle, square, solid,
   vibrato, chirp_lin, chirp_exp, noise,
   adsr, soft_edges, tremolo, gain, gain_db,
-  delay, crop, plus, pluses, envelope
+  delay, crop, plus, pluses, envelope,
+  convolve, average_window
 }

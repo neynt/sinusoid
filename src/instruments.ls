@@ -2,7 +2,7 @@
 # parameters and returns a signal that represents playing that instrument
 # at a given pitch.
 
-{sine, triangle, square, noise} = signals
+{sine, triangle, square, noise, plus} = signals
 {envelope, vibrato, chirp_exp, adsr, tremolo, gain_db} = signals
 
 # Other utilities that represent domain musical knowledge go here.

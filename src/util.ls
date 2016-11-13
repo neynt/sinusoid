@@ -38,12 +38,12 @@ window.memoize = (f) ->
   if dur(f) > 60
     f
   else
-    num_samples = dur(f) * engine.sample_rate + 1
+    num_samples = dur(f) * engine.sampleRate + 1
     memo = new Float64Array(num_samples)
     memo.fill(Infinity)
     res = (t) ->
-      idx = Math.round(t * engine.sample_rate)
-      t_real = idx / engine.sample_rate
+      idx = Math.round(t * engine.sampleRate)
+      t_real = idx / engine.sampleRate
       if memo[idx] == Infinity
         memo[idx] := f(t_real)
       memo[idx]
