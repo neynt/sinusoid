@@ -1,5 +1,4 @@
 GUI:
-- Get play button to work
 - Tooltips for shortcuts
 - Label settings
 - Scrubber

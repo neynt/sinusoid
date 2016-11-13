@@ -8,7 +8,7 @@ import * as CodeMirrorLs from 'codemirror/mode/livescript/livescript'
 export default class EditorTextEditor extends React.Component {
   handleKeyDown(e) {
     if (e.ctrlKey && e.keyCode == 13) {
-      this.props.songEngine.renderSong(this.editor.getValue());
+      this.props.songEngine.renderSong();
     }
   }
   render() {
@@ -27,6 +27,9 @@ export default class EditorTextEditor extends React.Component {
       window.location.hash =
         btoa(pako.deflate(this.editor.getValue(), {to: 'string'}));
     });
+
+    this.props.songEngine.getSongSrc = () => this.editor.getValue();
+
     // Load from URL hash
     if (window.location.hash) {
       this.refs.textarea.value =

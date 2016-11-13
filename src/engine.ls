@@ -11,17 +11,17 @@ class SongEngine
     'rgba(128, 128, 0, 0.2)'
   ]
   ->
-    window.addEventListener "load", ->
-      rendering_status = document.getElementById('rendering_status')
-
     @listeners =
       rendering_done: []
       rendering_status: []
       error: []
-
     @channels = []
+    # Function to get the song source, set by EditorTextEditor.
+    # TODO: do this in a better way
+    @get-song-src = -> ''
 
-  render-song: (song_src) ->
+  render-song: ->
+    song_src = @get-song-src()
     try
       compiled = livescript.compile song_src
     catch err

@@ -4,16 +4,20 @@ export default class EditorSettings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {renderingStatus: ''};
-  }
 
+    this.handleClick = this.handleClick.bind(this);
+  }
+  handleClick(e) {
+    this.props.songEngine.renderSong();
+  }
   render() {
     return (
       <div>
         <select>
           <option>LiveScript</option>
         </select>
-        <button id="play_button">Ctrl+Enter to play</button>
-        <span id="renderingStatus" ref="renderingStatus">
+        <button className='PlayButton' onClick={this.handleClick}>Play</button>
+        <span className='RenderingStatus' ref='renderingStatus'>
           {this.state.renderingStatus}
         </span>
       </div>
