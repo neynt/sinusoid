@@ -66,10 +66,6 @@ key =
 #   0 -> 60
 #   1 -> 
 
-window.difference_array = (a) ->
-  for i from 1 til a.length
-    a[i] - a[i - 1]
-
 chord_deltas =
   major_triad: [4 3 5]  # III
   minor_triad: [3 4 5]  # iii
@@ -80,6 +76,20 @@ chord = (root, name) ->
   lower_name = name.toLowerCase()
   if chord_deltas[name]?
     (key_from_deltas chord_deltas[name]) root
+
+diatonic_chords = window.dc =
+  major: <[ I ii iii IV V vi viio ]>
+  natural_minor: <[ i iio III iv v VI VII ]>
+
+differences = (a) ->
+  for i from 1 til a.length
+    a[i] - a[i - 1]
+
+prefix_sums = (a) ->
+  res = [0]
+  for i from 0 til a.length
+    res.push a[i] + res[-1 til][0]
+  res
 
 roman_chord = window.rc = do ->
   roman_chord_regex = /^(i|ii|iii|iv|v|vi|vii)([67]?)([+o]?)$/i
@@ -98,31 +108,34 @@ roman_chord = window.rc = do ->
     groups = roman_chord_regex.exec(name)
     root = (from_roman groups.1) - 1
 
-    var kind, diminished, augmented
+    var quality, diminished, augmented, seventh
     base_name = groups.1
 
     if base_name == base_name.toLowerCase()
-      kind = \minor
+      quality = \minor
     else
-      kind = \major
+      quality = \major
 
     for group in groups[2 til]
       console.log group
       match group
       | 'o' => diminished = true
       | '+' => augmented = true
+      | '7' => seventh = true
 
-    deltas = match augmented, diminished, kind
+    deltas = match augmented, diminished, quality
     | true, _, _ => chord_deltas.augmented_triad
     | _, true, _ => chord_deltas.diminished_triad
     | _, _, \major => chord_deltas.major_triad
     | _, _, \minor => chord_deltas.minor_triad
 
+    offsets = prefix_sums deltas
+    deltas = differences offsets
+
     console.log name, deltas
 
     (key_from_deltas deltas) (key root)
 
-# possibly delete in favor of roman_chord
 diatonic_chord = (key, name) ->
   lower_name = name.toLowerCase()
   root = (from_roman lower_name) - 1
@@ -132,7 +145,7 @@ diatonic_chord = (key, name) ->
     key root + 4
     key root + 7
   ]
-  deltas = difference_array arr
+  deltas = differences arr
   if name[0] == lower_name[0]
     console.assert("#{deltas}" == "#{chord_deltas.minor_triad}")
   else
