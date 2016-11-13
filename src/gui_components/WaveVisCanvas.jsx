@@ -5,17 +5,16 @@ export default class WaveVisCanvas extends React.Component {
     return <canvas ref="canvas" className="fullwidth_canvas"></canvas>
   }
   updateCanvasSize() {
-    this.props.songEngine.redraw_canvas(this.refs.canvas);
+    this.props.songEngine.redrawCanvas(this.refs.canvas);
   }
   componentDidMount() {
     this.updateCanvasSize();
 
     let that = this;
-    this.props.songEngine.add_listener(() => {
-      that.props.songEngine.redraw_canvas(that.refs.canvas);
+    this.props.songEngine.addListener('rendering_done', () => {
+      that.props.songEngine.redrawCanvas(that.refs.canvas);
     });
   }
   componentWillUnmount() {
   }
 }
-

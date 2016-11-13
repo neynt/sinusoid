@@ -7,23 +7,8 @@ import * as CodeMirrorLs from 'codemirror/mode/livescript/livescript'
 
 export default class EditorTextEditor extends React.Component {
   handleKeyDown(e) {
-    try {
-      if (e.ctrlKey && e.keyCode == 13) {
-        const compiled = livescript.compile(this.editor.getValue());
-        let song = eval(compiled);
-        if (!Array.isArray(song)) {
-          song = [song];
-        }
-        song = song.map((s) => delay(-0.0, s))
-        const song_dur = song.reduce(((acc, cur) => Math.max(acc, dur(cur))), 0);
-        let good_dur = 2;
-        if (song_dur <= 600) {
-          good_dur = song_dur;
-        }
-        this.props.songEngine.render_song(song, good_dur);
-      }
-    } catch (e) {
-      throw e;
+    if (e.ctrlKey && e.keyCode == 13) {
+      this.props.songEngine.renderSong(this.editor.getValue());
     }
   }
   render() {
@@ -38,7 +23,7 @@ export default class EditorTextEditor extends React.Component {
     );
   }
   componentDidMount() {
-    this.props.songEngine.add_listener(() => {
+    this.props.songEngine.addListener('rendering_done', () => {
       window.location.hash =
         btoa(pako.deflate(this.editor.getValue(), {to: 'string'}));
     });

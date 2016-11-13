@@ -6,35 +6,51 @@ sampleRate = audioCtx.sampleRate
 
 class SongEngine
   @colors = [
-    'rgba(255, 128, 0, 0.5)'
-    'rgba(0, 192, 255, 0.5)'
-    'rgba(128, 128, 0, 0.5)'
+    'rgba(249, 38, 81, 0.2)'
+    'rgba(0, 192, 255, 0.2)'
+    'rgba(128, 128, 0, 0.2)'
   ]
   ->
     window.addEventListener "load", ->
       rendering_status = document.getElementById('rendering_status')
-    @listeners = []
+
+    @listeners =
+      rendering_done: []
+      rendering_status: []
+      error: []
+
     @channels = []
 
-  render_song: (song, duration) ->
-    time_start = performance.now()
+  render-song: (song_src) ->
+    try
+      compiled = livescript.compile song_src
+    catch err
+      @notify \error, "Error while compiling: #{err.message}"
+      throw err
 
-    if Array.isArray(song)
-      num_channels = song.length
-    else
-      num_channels = 1
+    try
+      song = eval compiled
+    catch err
+      @notify \error, "Error while running: #{err.message}"
+      throw err
+
+    if !Array.isArray(song)
       song = [song]
+    #song = song.map((s) -> delay(-0.0, s))
+    num_channels = song.length
+    song_duration = song.reduce(((acc, cur) -> Math.max(acc, dur(cur))), 0)
+    duration = if song_duration <= 600 then song_duration else 2
 
+    time_start = performance.now()
     frameCount = sampleRate * duration
     myArrayBuffer = audioCtx.createBuffer(num_channels, frameCount, sampleRate)
     chunkSize = Math.round(sampleRate)
-
-    var cur_buffering
 
     @channels = [myArrayBuffer.getChannelData(c) for c from 0 til num_channels]
     window.ch = @channels # TODO remove
 
     self = this
+
     render_from = (start, cur_channel) ->
       end = Math.min(start + chunkSize, frameCount)
       for i from start til end
@@ -42,7 +58,7 @@ class SongEngine
 
       completion =
         (start + cur_channel * frameCount) / (num_channels * frameCount)
-      rendering_status.innerHTML = "#{(completion*100).toFixed(0)}%"
+      self.notify \rendering_status, "rendering #{(completion*100).toFixed(0)}%"
 
       if end == frameCount and cur_channel + 1 < num_channels
         setTimeout(-> render_from(0, cur_channel + 1))
@@ -50,22 +66,25 @@ class SongEngine
         setTimeout(-> render_from(start + chunkSize, cur_channel))
       else
         # TODO: Get this outta here!
-        rendering_status.innerHTML = "100%"
+        self.notify \rendering_status, "rendering done"
         source = audioCtx.createBufferSource()
         window.buf = source.buffer = myArrayBuffer
         source.connect(audioCtx.destination)
         source.start()
         time_end = performance.now()
         console.log("rendering #{duration} seconds of audio took #{((time_end - time_start) / 1000.0).toFixed(2)} seconds")
-        for f in self.listeners
-          f()
+        self.notify 'rendering_done'
 
     render_from(0, 0)
 
-  add_listener: (f) ->
-    @listeners.push f
+  add-listener: (topic, f) ->
+    @listeners[topic].push f
 
-  redraw_canvas: (canvas) ->
+  notify: (topic, message) ->
+    for f in @listeners[topic]
+      f(message)
+
+  redraw-canvas: (canvas) ->
     const width = canvas.width = canvas.offsetWidth
     const height = canvas.height = canvas.offsetHeight
     const ctx = canvas.getContext '2d'
