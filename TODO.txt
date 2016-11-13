@@ -1,0 +1,13 @@
+GUI:
+- Get play button to work
+- Tooltips for shortcuts
+- Label settings
+- Scrubber
+- Spectrogram visualizer
+- Examples
+- Tutorial
+- Reference docs
+
+Music:
+- Filters
+- Reverb
