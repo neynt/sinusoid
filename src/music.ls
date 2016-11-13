@@ -119,7 +119,6 @@ roman_chord = window.rc = do ->
       quality = \major
 
     for group in groups[2 til]
-      console.log group
       match group
       | 'o' => diminished = true
       | '+' => augmented = true
@@ -133,8 +132,6 @@ roman_chord = window.rc = do ->
 
     offsets = prefix_sums deltas
     deltas = differences offsets
-
-    console.log name, deltas
 
     (key_from_deltas deltas) (key root)
 

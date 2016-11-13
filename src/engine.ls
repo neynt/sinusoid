@@ -16,14 +16,20 @@ class SongEngine
       rendering_status: []
       error: []
     @channels = []
-    # Function to get the song source, set by EditorTextEditor.
-    # TODO: do this in a better way
+    # Callbacks to get various data from the components.
+    # TODO: do these in a better way
     @get-song-src = -> ''
+    @get-lang = -> ''
 
   render-song: ->
     song_src = @get-song-src()
+    lang = @get-lang()
+    console.log lang
     try
-      compiled = livescript.compile song_src
+      compiled = match lang
+      | 'livescript' => livescript.compile song_src
+      | 'javascript' => song_src
+      | _ => song_src  # whatever
     catch err
       @notify \error, "Error while compiling: #{err.message}"
       throw err

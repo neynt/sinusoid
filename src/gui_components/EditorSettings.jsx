@@ -3,18 +3,22 @@ import React from 'react'
 export default class EditorSettings extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {renderingStatus: ''};
-
+    this.state = {
+      renderingStatus: ''
+    };
     this.handleClick = this.handleClick.bind(this);
   }
   handleClick(e) {
     this.props.songEngine.renderSong();
   }
   render() {
+          //<option value='coffeescript'>Coffee</option>
+          //<option value='clojure'>Cljs</option>
     return (
       <div>
-        <select>
-          <option>LiveScript</option>
+        <select onChange={this.props.onChangeLang} value={this.props.lang}>
+          <option value='javascript'>JavaScript</option>
+          <option value='livescript'>LiveScript</option>
         </select>
         <button className='PlayButton' onClick={this.handleClick}>Play</button>
         <span className='RenderingStatus' ref='renderingStatus'>

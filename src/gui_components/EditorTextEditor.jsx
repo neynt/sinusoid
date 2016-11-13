@@ -4,6 +4,8 @@ import CodeMirror from 'codemirror'
 import * as CodeMirrorJs from 'codemirror/mode/javascript/javascript'
 import * as CodeMirrorCfs from 'codemirror/mode/coffeescript/coffeescript'
 import * as CodeMirrorLs from 'codemirror/mode/livescript/livescript'
+import * as CodeMirrorClojure from 'codemirror/mode/clojure/clojure'
+import 'codemirror/mode/coffeescript/coffeescript'
 
 export default class EditorTextEditor extends React.Component {
   handleKeyDown(e) {
@@ -36,7 +38,7 @@ export default class EditorTextEditor extends React.Component {
         pako.inflate(atob(window.location.hash.slice(1)), {to: 'string'});
     }
 
-    this.editor = CodeMirror.fromTextArea(this.refs.textarea, {
+    this.editor = window.editor = CodeMirror.fromTextArea(this.refs.textarea, {
       mode: 'livescript',
       theme: 'monokai',
       lineNumbers: true,
@@ -59,6 +61,9 @@ export default class EditorTextEditor extends React.Component {
     this.editor_elem = this.editor.getWrapperElement();
     this.editor_elem.style.height =
       (window.innerHeight - this.editor_elem.offsetTop - 20) + 'px';
+  }
+  componentWillReceiveProps(nextProps) {
+    this.editor.setOption('mode', nextProps.lang);
   }
 }
 

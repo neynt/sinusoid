@@ -3,7 +3,7 @@
 # at a given pitch.
 
 {sine, triangle, square, noise, plus} = signals
-{envelope, vibrato, chirp_exp, adsr, tremolo, gain_db} = signals
+{envelope, solid, vibrato, chirp_exp, adsr, tremolo, gain_db} = signals
 
 # Other utilities that represent domain musical knowledge go here.
 # midi number to frequency
@@ -47,6 +47,6 @@ guitar = (note) ->
   |> gain_db -5
 
 exports = module.exports = {
-  bloop, bleep, bzzp,
+  midi, bloop, bleep, bzzp,
   tsch, snare, bass_drum, guitar
 };
