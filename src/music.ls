@@ -60,18 +60,6 @@ key =
   major_pentatonic: key_from_deltas [2 2 3 3 2]
   minor_pentatonic: key_from_deltas [3 2 2 2 3]
 
-from_roman = (roman) ->
-  table = {
-    i: 1
-    ii: 2
-    iii: 3
-    iv: 4
-    v: 5
-    vi: 6
-    vii: 7
-  }
-  table[roman]
-
 # A chord is a function from relative index to
 # note in the chord.
 # e.g. chord c4 'i'
@@ -93,18 +81,29 @@ chord = (root, name) ->
   if chord_deltas[name]?
     (key_from_deltas chord_deltas[name]) root
 
-roman_chord = (key, name) ->
-  lower_name = name.toLowerCase()
-  root = (from_roman lower_name) - 1
-  type = ''
-  if name[0] == lower_name[0]
-    type = 'minor'
-    deltas = chord_deltas.minor_triad
-  else
-    type = 'major'
-    deltas = chord_deltas.major_triad
-  (key_from_deltas deltas) (key root)
+roman_chord = window.rc = do ->
+  roman_chord_regex = /^(i|ii|iii|iv|v|vi|vii)([67]?)([+o]?)$/i
+  roman_numerals =
+    i: 1
+    ii: 2
+    iii: 3
+    iv: 4
+    v: 5
+    vi: 6
+    vii: 7
+  from_roman = (roman) ->
+    roman_numerals[roman.toLowerCase()]
 
+  (key, name) ->
+    groups = roman_chord_regex.exec(name)
+    root = (from_roman groups.0) - 1
+    if groups.0.0 == groups.0.0.toLowerCase()
+      deltas = chord_deltas.minor_triad
+    else
+      deltas = chord_deltas.major_triad
+    (key_from_deltas deltas) (key root)
+
+# possibly delete in favor of roman_chord
 diatonic_chord = (key, name) ->
   lower_name = name.toLowerCase()
   root = (from_roman lower_name) - 1
