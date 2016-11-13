@@ -11,9 +11,9 @@ midi = (n) -> 440 * Math.pow(2, (n - 69) / 12)
 
 # Instruments:
 # midi number -> signal
-blip = (base_func) -> (pitch) ->
+blip = (base_func) -> (pitch, duration = 0.1) ->
   base_func vibrato(midi(pitch), midi(pitch+0.1), 7)
-  |> envelope adsr(0.008, 1.0, 0.1, 0.3, 0.1, 0.3)
+  |> envelope adsr(0.008, 1.0, 0.1, 0.3, duration, 0.3)
   |> envelope tremolo(6, 0.5)
   |> gain_db -10
 

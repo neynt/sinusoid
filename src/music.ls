@@ -73,8 +73,8 @@ window.difference_array = (a) ->
 chord_deltas =
   major_triad: [4 3 5]  # III
   minor_triad: [3 4 5]  # iii
-  diminished_triad: [3 3 6]  # III+
-  augmented_triad: [4 4 4]  # iiio
+  diminished_triad: [3 3 6]  # iiio
+  augmented_triad: [4 4 4]  # III+
 
 chord = (root, name) ->
   lower_name = name.toLowerCase()
@@ -96,11 +96,30 @@ roman_chord = window.rc = do ->
 
   (key, name) ->
     groups = roman_chord_regex.exec(name)
-    root = (from_roman groups.0) - 1
-    if groups.0.0 == groups.0.0.toLowerCase()
-      deltas = chord_deltas.minor_triad
+    root = (from_roman groups.1) - 1
+
+    var kind, diminished, augmented
+    base_name = groups.1
+
+    if base_name == base_name.toLowerCase()
+      kind = \minor
     else
-      deltas = chord_deltas.major_triad
+      kind = \major
+
+    for group in groups[2 til]
+      console.log group
+      match group
+      | 'o' => diminished = true
+      | '+' => augmented = true
+
+    deltas = match augmented, diminished, kind
+    | true, _, _ => chord_deltas.augmented_triad
+    | _, true, _ => chord_deltas.diminished_triad
+    | _, _, \major => chord_deltas.major_triad
+    | _, _, \minor => chord_deltas.minor_triad
+
+    console.log name, deltas
+
     (key_from_deltas deltas) (key root)
 
 # possibly delete in favor of roman_chord
