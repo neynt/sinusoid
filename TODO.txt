@@ -1,4 +1,5 @@
 GUI:
+- Print errors
 - Get play button to work
 - Tooltips for shortcuts
 - Label settings
