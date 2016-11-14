@@ -13,7 +13,9 @@ cosine = (f) ->
 triangle = (f) ->
   (t) ->
     phase = ((f(t) % 1 + 1) % 1)
-    if phase < 0.5 then phase * 4 - 1 else 3 - phase * 4
+    if phase < 0.25 then phase * 4
+    else if phase < 0.75 then 2 - phase * 4
+    else phase * 4 - 4
   |> crop dur(f)
 
 square = (f) ->
@@ -41,6 +43,16 @@ chirp_exp = (freq1, freq2, T) ->
 
 # White noise
 noise = -> (t) -> Math.random() * 2 - 1
+
+fade_in = (T) ->
+  (t) ->
+    t / T
+  |> crop T
+
+fade_out = (T) ->
+  (t) ->
+    1 - t / T
+  |> crop T
 
 # ADSR envelope
 # params are [attack, delay, sustain, release] x [level, time]
@@ -128,6 +140,7 @@ average_window = (T) ->
 exports = module.exports = {
   sine, cosine, triangle, square, solid,
   vibrato, chirp_lin, chirp_exp, noise,
+  fade_in, fade_out,
   adsr, soft_edges, tremolo, gain, gain_db,
   delay, crop, plus, pluses, envelope,
   convolve, average_window
