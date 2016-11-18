@@ -79,7 +79,7 @@ chord = (root, name) ->
   if chord_deltas[name]?
     (key_from_deltas chord_deltas[name]) root
 
-diatonic_chords = window.dc =
+diatonic_chords =
   major: <[ I ii iii IV V vi viio ]>
   natural_minor: <[ i iio III iv v VI VII ]>
 
@@ -135,9 +135,7 @@ roman_chord = window.rc = do ->
 
     (key_from_deltas deltas) (key root)
 
-diatonic_chord = (key, name) ->
-  lower_name = name.toLowerCase()
-  root = (from_roman lower_name) - 1
+diatonic_triad = (key, root) ->
   arr = [
     key root
     key root + 2
@@ -145,10 +143,8 @@ diatonic_chord = (key, name) ->
     key root + 7
   ]
   deltas = differences arr
-  if name[0] == lower_name[0]
-    console.assert("#{deltas}" == "#{chord_deltas.minor_triad}")
-  else
-    console.assert("#{deltas}" == "#{chord_deltas.major_triad}")
+  # TODO: detect the actual chord quality
+  # and display it somehow?
   (key_from_deltas deltas) (key root)
 
 # A4: 69
@@ -160,8 +156,17 @@ melody = (instrument, notes) ->
     accum += d
   res
 
+drum_machine = (subdiv, beatline, mapping) ->
+  res = []
+  for c, i in beatline
+    if mapping[c]?
+      res.push [i * subdiv, mapping[c]]
+  res
+
 exports = module.exports = {
   render_notes, note,
   key, key_from_deltas, temperament,
-  chord, roman_chord, diatonic_chord
+  diatonic_chords,
+  chord, roman_chord, diatonic_triad,
+  drum_machine
 };

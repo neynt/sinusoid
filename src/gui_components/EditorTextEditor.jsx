@@ -61,6 +61,7 @@ export default class EditorTextEditor extends React.Component {
     this.editor_elem = this.editor.getWrapperElement();
     this.editor_elem.style.height =
       (window.innerHeight - this.editor_elem.offsetTop - 20) + 'px';
+    this.editor.refresh();
   }
   componentWillReceiveProps(nextProps) {
     this.editor.setOption('mode', nextProps.lang);
