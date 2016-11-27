@@ -2,7 +2,7 @@
 # parameters and returns a signal that represents playing that instrument
 # at a given pitch.
 
-{sine, triangle, square, noise, plus} = signals
+{sine, triangle, saw, square, noise, plus} = signals
 {envelope, solid, vibrato, chirp_exp, adsr, tremolo, gain_db} = signals
 
 # Other utilities that represent domain musical knowledge go here.
@@ -19,6 +19,7 @@ blip = (base_func) -> (pitch, duration = 0.1) ->
 
 bloop = blip sine
 bleep = blip triangle
+bliip = blip saw
 bzzp = blip square
 
 tsch = ->
@@ -47,6 +48,6 @@ guitar = (note) ->
   |> gain_db -5
 
 exports = module.exports = {
-  midi, bloop, bleep, bzzp,
+  midi, bloop, bleep, bliip, bzzp,
   tsch, snare, bass_drum, guitar
 };

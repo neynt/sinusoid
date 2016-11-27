@@ -1,8 +1,13 @@
 # The engine is the interface between the dreamland of (t) -> [-1,1]
 # and the real world.
 
-audioCtx = (new (window.AudioContext || window.webkitAudioContext))
+audioCtx = new (window.AudioContext || window.webkitAudioContext)
 sampleRate = audioCtx.sampleRate
+
+window.analyser = analyser = audioCtx.createAnalyser()
+bufferLength = analyser.frequencyBinCount
+window.dataArray = dataArray = new Float32Array bufferLength
+analyser.connect audioCtx.destination
 
 class SongEngine
   @colors = [
@@ -75,11 +80,11 @@ class SongEngine
         self.notify \rendering_status, "rendering done"
         source = audioCtx.createBufferSource()
         window.buf = source.buffer = myArrayBuffer
-        source.connect(audioCtx.destination)
+        source.connect analyser
         source.start()
         time_end = performance.now()
         console.log("rendering #{duration} seconds of audio took #{((time_end - time_start) / 1000.0).toFixed(2)} seconds")
-        self.notify 'rendering_done'
+        self.notify \rendering_done
 
     render_from(0, 0)
 
@@ -106,6 +111,22 @@ class SongEngine
         y = height * 1/2 * (1 - @channels[c][i])
         ctx.lineTo x, y
       ctx.stroke()
+
+  redraw-freq-canvas: (canvas) ->
+    const ctx = canvas.getContext '2d'
+    const width = canvas.width = canvas.offsetWidth
+    const height = canvas.height = canvas.offsetHeight
+    ctx.fillStyle = '#000'
+    ctx.fillRect 0, 0, width, height
+    const num_freqs = dataArray.length
+    analyser.getFloatFrequencyData dataArray
+    ctx.fillStyle = '#f00'
+    for f from 0 til num_freqs
+      const bar_width = width / num_freqs
+      const bar_height = Math.max height + dataArray[f] / 2, 0
+      const bar_x = f * bar_width
+      ctx.globalAlpha = Math.max 1 + dataArray[f] / 100, 0
+      ctx.fillRect bar_x, height - bar_height, bar_width, bar_height
 
 window.engine =
   sampleRate: sampleRate

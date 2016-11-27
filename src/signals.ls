@@ -4,32 +4,38 @@
 # Pure tones.
 sine = (f) ->
   (t) -> Math.sin(2 * Math.PI * f(t))
-  |> crop dur(f)
+  |> crop dur f
 
 cosine = (f) ->
   (t) -> Math.cos(2 * Math.PI * f(t))
-  |> crop dur(f)
+  |> crop dur f
 
 triangle = (f) ->
   (t) ->
-    phase = ((f(t) % 1 + 1) % 1)
+    phase = (f(t) % 1 + 1) % 1
     if phase < 0.25 then phase * 4
     else if phase < 0.75 then 2 - phase * 4
     else phase * 4 - 4
-  |> crop dur(f)
+  |> crop dur f
+
+saw = (f) ->
+  (t) ->
+    phase = (f(t) % 1 + 1) % 1
+    phase * 2 - 1
+  |> crop dur f
 
 square = (f) ->
   (t) -> if ((f(t) % 1 + 1) % 1) < 0.5 then -1 else 1
-  |> crop dur(f)
+  |> crop dur f
 
 solid = (freq) ->
   (t) -> freq * t
 
 vibrato = (freq1, freq2, freqV) ->
   freq_mid = (freq1 + freq2) / 2
-  Vcos = sine(solid(freqV))
+  Vcos = sine solid freqV
   Vamp = -(freq_mid - freq1) / (freqV * Math.PI * 2)
-  (t) -> freq_mid * t + Vamp*Vcos(t)
+  (t) -> freq_mid * t + Vamp * Vcos(t)
 
 # Chirps: Pure tones that change frequency smoothly
 chirp_lin = (freq1, freq2, T) ->
@@ -38,7 +44,8 @@ chirp_lin = (freq1, freq2, T) ->
 
 chirp_exp = (freq1, freq2, T) ->
   (t) ->
-    freq1 * T * Math.pow(freq2/freq1, t/T)/(Math.log(freq2/freq1))
+    freq1 * T * Math.pow(freq2/ freq1, t/T) /
+    (Math.log freq2 / freq1)
   |> crop T
 
 # White noise
@@ -99,11 +106,19 @@ delay = (delay) -> (s1) ->
   (t) -> if t >= delay then s1(t - delay) else 0
   |> crop Math.max (dur s1) + delay, 0
 
+# chop off pre-time domain
+chop = (s1) ->
+  (t) -> if t < 0 then 0 else s1(t)
+  |> crop dur s1
+
 # limit the duration
 crop = (duration) -> (s1) ->
-  res = (t) -> if t >= duration then 0 else s1(t)
-  res.duration = duration
-  res
+  if dur(s1) == duration
+    s1
+  else
+    res = (t) -> if t >= duration then 0 else s1(t)
+    res.duration = duration
+    res
 
 # sum two signals
 plus = (s1, s2) ->
@@ -138,10 +153,10 @@ average_window = (T) ->
   [1 / num_samples] * num_samples
 
 exports = module.exports = {
-  sine, cosine, triangle, square, solid,
+  sine, cosine, triangle, saw, square, solid,
   vibrato, chirp_lin, chirp_exp, noise,
   fade_in, fade_out,
   adsr, soft_edges, tremolo, gain, gain_db,
-  delay, crop, plus, pluses, envelope,
+  delay, chop, crop, plus, pluses, envelope,
   convolve, average_window
 }
