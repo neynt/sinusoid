@@ -1,7 +1,10 @@
 module.exports = {
-  entry: './index.ls',
+  entry: {
+    index: './index.ls',
+    worker: './worker.ls'
+  },
   output: {
-    filename: 'bundle.js'
+    filename: '[name].entry.js'
   },
   module: {
     loaders: [

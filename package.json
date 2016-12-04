@@ -17,7 +17,9 @@
     "prelude-ls": "^1.1.2",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "webpack": "^1.13.2"
+    "webpack": "^1.13.2",
+    "worker-loader": "^0.7.1",
+    "workerjs": "^0.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

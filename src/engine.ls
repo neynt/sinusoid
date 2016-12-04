@@ -21,10 +21,43 @@ class SongEngine
       rendering_status: []
       error: []
     @channels = []
+    @worker = new Worker "worker.entry.js"
     # Callbacks to get various data from the components.
     # TODO: do these in a better way
     @get-song-src = -> ''
     @get-lang = -> ''
+
+    self = this
+    @worker.onmessage = (msg) ->
+      switch msg.data.action
+      case \update_song_done
+        console.log "update song done"
+        num-channels = msg.data.num-channels
+        duration = msg.data.duration
+        frameCount = sampleRate * duration
+        self.myArrayBuffer = audioCtx.createBuffer(num-channels, frameCount, sampleRate)
+        self.channels = [self.myArrayBuffer.getChannelData(c) for c from 0 til num-channels]
+        self.buffers = [channel.buffer for channel in self.channels]
+        console.log "samples per channel before: #{self.channels[0].length}"
+        self.worker.postMessage \
+          action: \render_song, sampleRate: sampleRate, channels: self.channels,
+          self.buffers
+        console.log "samples per channel after: #{self.channels[0].length}"
+      case \status
+        console.log "status"
+        self.notify \rendering_status, msg.data.status
+      case \render_song_done
+        console.log "render song done"
+        console.log "number of channels: #{msg.data.channels.length}"
+        console.log "samples per channel: #{msg.data.channels[0].length}"
+        for c, i in msg.data.channels
+          self.myArrayBuffer.copyToChannel c, i
+        self.notify \rendering_status, "rendering done"
+        source = audioCtx.createBufferSource()
+        window.buf = source.buffer = self.myArrayBuffer
+        source.connect analyser
+        source.start()
+        self.notify \rendering_done
 
   render-song: ->
     song_src = @get-song-src()
@@ -39,54 +72,7 @@ class SongEngine
       @notify \error, "Error while compiling: #{err.message}"
       throw err
 
-    try
-      song = eval compiled
-    catch err
-      @notify \error, "Error while running: #{err.message}"
-      throw err
-
-    if !Array.isArray(song)
-      song = [song]
-    #song = song.map((s) -> delay(-0.0, s))
-    num_channels = song.length
-    song_duration = song.reduce(((acc, cur) -> Math.max(acc, dur(cur))), 0)
-    duration = if song_duration <= 600 then song_duration else 2
-
-    time_start = performance.now()
-    frameCount = sampleRate * duration
-    myArrayBuffer = audioCtx.createBuffer(num_channels, frameCount, sampleRate)
-    chunkSize = Math.round(sampleRate)
-
-    @channels = [myArrayBuffer.getChannelData(c) for c from 0 til num_channels]
-    window.ch = @channels # TODO remove
-
-    self = this
-
-    render_from = (start, cur_channel) ->
-      end = Math.min(start + chunkSize, frameCount)
-      for i from start til end
-        self.channels[cur_channel][i] = song[cur_channel](i / sampleRate)
-
-      completion =
-        (start + cur_channel * frameCount) / (num_channels * frameCount)
-      self.notify \rendering_status, "rendering #{(completion*100).toFixed(0)}%"
-
-      if end == frameCount and cur_channel + 1 < num_channels
-        setTimeout(-> render_from(0, cur_channel + 1))
-      else if end < frameCount
-        setTimeout(-> render_from(start + chunkSize, cur_channel))
-      else
-        # TODO: Get this outta here!
-        self.notify \rendering_status, "rendering done"
-        source = audioCtx.createBufferSource()
-        window.buf = source.buffer = myArrayBuffer
-        source.connect analyser
-        source.start()
-        time_end = performance.now()
-        console.log("rendering #{duration} seconds of audio took #{((time_end - time_start) / 1000.0).toFixed(2)} seconds")
-        self.notify \rendering_done
-
-    render_from(0, 0)
+    @worker.postMessage action: \update_song, code: compiled
 
   add-listener: (topic, f) ->
     @listeners[topic].push f
