@@ -31,6 +31,18 @@ window.util.segment_finder = (things) ->
         min = mid
     objects_at[endpoints[min]]
 
+# Decorator that memoizes functions.
+# Use it to cache the result of functions which:
+#   - don't have a large keyspace
+#   - are expensive to compute
+window.memo_fn = (f) ->
+  memo = {}
+  ->
+    args = JSON.stringify(Array.prototype.slice.call arguments)
+    if not memo[args]?
+      memo[args] = f.apply this, arguments
+    memo[args]
+
 # Decorator that memoizes a signal using a Float64Array by rounding time to the
 # nearest sample.
 # f: (t) -> [-1,1]

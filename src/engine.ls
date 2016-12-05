@@ -21,42 +21,36 @@ class SongEngine
       rendering_status: []
       error: []
     @channels = []
-    @worker = new Worker "worker.entry.js"
+
     # Callbacks to get various data from the components.
     # TODO: do these in a better way
     @get-song-src = -> ''
     @get-lang = -> ''
 
     self = this
+    @worker = new Worker "worker.entry.js"
     @worker.onmessage = (msg) ->
       switch msg.data.action
       case \update_song_done
-        console.log "update song done"
         num-channels = msg.data.num-channels
         duration = msg.data.duration
         frameCount = sampleRate * duration
-        self.myArrayBuffer = audioCtx.createBuffer(num-channels, frameCount, sampleRate)
-        self.channels = [self.myArrayBuffer.getChannelData(c) for c from 0 til num-channels]
-        self.buffers = [channel.buffer for channel in self.channels]
-        console.log "samples per channel before: #{self.channels[0].length}"
+        self.audio-buffer = audioCtx.createBuffer(num-channels, frameCount, sampleRate)
+        self.channels = [self.audio-buffer.getChannelData(c) for c from 0 til num-channels]
         self.worker.postMessage \
           action: \render_song, sampleRate: sampleRate, channels: self.channels,
-          self.buffers
-        console.log "samples per channel after: #{self.channels[0].length}"
+          [channel.buffer for channel in self.channels]
       case \status
-        console.log "status"
         self.notify \rendering_status, msg.data.status
       case \render_song_done
-        console.log "render song done"
-        console.log "number of channels: #{msg.data.channels.length}"
-        console.log "samples per channel: #{msg.data.channels[0].length}"
-        for c, i in msg.data.channels
-          self.myArrayBuffer.copyToChannel c, i
-        self.notify \rendering_status, "rendering done"
+        self.channels = msg.data.channels
+        for c, i in self.channels
+          self.audio-buffer.copyToChannel c, i
         source = audioCtx.createBufferSource()
-        window.buf = source.buffer = self.myArrayBuffer
+        source.buffer = self.audio-buffer
         source.connect analyser
         source.start()
+        self.notify \rendering_status, "rendering done"
         self.notify \rendering_done
 
   render-song: ->
@@ -67,7 +61,7 @@ class SongEngine
       compiled = match lang
       | 'livescript' => livescript.compile song_src
       | 'javascript' => song_src
-      | _ => song_src  # whatever
+      | _ => song_src
     catch err
       @notify \error, "Error while compiling: #{err.message}"
       throw err
@@ -87,6 +81,8 @@ class SongEngine
     const ctx = canvas.getContext '2d'
     ctx.fillStyle = '#000'
     ctx.fillRect 0, 0, width, height
+    if !@channels?
+      return
     const num_samples = Math.max.apply(null, @channels.map (.length))
     for c from 0 til @channels.length
       ctx.strokeStyle = @@colors[c % @@colors.length]

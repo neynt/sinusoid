@@ -15,9 +15,9 @@ discretize = (s1) ->
   cache
 
 play_discrete = (d) ->
-  duration = d.length / engine.sampleRate
+  duration = (d.length - 1) / engine.sampleRate
   (t) ->
-    if 0 <= t <= duration then
+    if 0 <= t < duration then
       d[Math.round(t * engine.sampleRate)]
     else
       0
