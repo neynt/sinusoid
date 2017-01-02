@@ -1,5 +1,6 @@
 # The engine is the interface between the dreamland of (t) -> [-1,1]
 # and the real world.
+
 audioCtx = new (window.AudioContext || window.webkitAudioContext)
 sampleRate = audioCtx.sampleRate
 
@@ -104,9 +105,10 @@ class SongEngine
     ctx.fillStyle = '#f00'
     for f from 0 til num_freqs
       const bar_width = width / num_freqs
-      const bar_height = Math.max height + dataArray[f] / 2, 0
+      const concentration = (Math.max dataArray[f] + 100, 0) / 100
+      const bar_height = concentration * height
       const bar_x = f * bar_width
-      ctx.globalAlpha = Math.max 1 + dataArray[f] / 100, 0
+      ctx.globalAlpha = concentration
       ctx.fillRect bar_x, height - bar_height, bar_width, bar_height
 
 window.engine =

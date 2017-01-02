@@ -1,9 +1,13 @@
 {delay} = signals
 {crop} = signals
+{sin, cos, PI} = Math
 
+# Converts a continuous signal to a discrete signal (i.e. array)
+# by sampling at a rate of engine.sampleRate.
+# signal -> Float64Array
 discretize = (s1) ->
   if (dur s1) > 600
-    throw "error: signal is too long to discretize efficiently"
+    throw message: "error: signal is too long to discretize"
 
   min_n = (dur s1) * engine.sampleRate * 1.2
   n = 256
@@ -14,6 +18,8 @@ discretize = (s1) ->
     cache[i] = s1 (i / engine.sampleRate)
   cache
 
+# Wraps a discrete signal in a function.
+# Float64Array -> signal
 play_discrete = (d) ->
   duration = (d.length - 1) / engine.sampleRate
   (t) ->
@@ -23,23 +29,24 @@ play_discrete = (d) ->
       0
   |> crop duration
 
-pad_to_pow2 = (arr) ->
-  0
+# Sinc function with a certain cutoff
+sinc = (cutoff) -> (i) ->
+  if i == 0 then 2 * cutoff else sin(2 * PI * cutoff * i) / (i * PI)
 
-sinc = (cutoff) ->
-  (i) -> if i == 0 then 2 * cutoff else Math.sin(2 * Math.PI * cutoff * i) / (i * Math.PI)
-
-hamming_window = (M) ->
-  (i) -> 0.54 - 0.46 * Math.cos(2 * Math.PI * i / M)
-
-blackman_window = (M) ->
-  (i) -> 0.42 - 0.5 * Math.cos(2 * Math.PI * i / M) +
-               0.08 * Math.cos(4 * Math.PI * i / M)
+# DSP window functions
+# M: the size of the filter.
+# Higher M means sharper frequency response but slower.
+window =
+  hamming: (M) ->
+    (i) -> 0.54 - 0.46 * cos(2 * PI * i / M)
+  blackman: (M) ->
+    (i) -> 0.42 - 0.5 * cos(2 * PI * i / M) +
+                 0.08 * cos(4 * PI * i / M)
 
 lpf_kernel = (cutoff, M) ->
   cutoff_d = cutoff / engine.sampleRate
   my_sinc = sinc cutoff_d
-  my_window = blackman_window M
+  my_window = window.blackman M
   f = (i) ->
     (my_sinc i - M / 2) * (my_window i)
   for i from 0 til M+1
@@ -48,11 +55,13 @@ lpf_kernel = (cutoff, M) ->
 hpf_kernel = (cutoff, M) ->
   k = lpf_kernel cutoff, M
   if M % 2 != 0
-    throw "M must be even"
+    throw message: "M must be even"
   mid = Math.round(M/2)
   for i from 0 til M+1
-    k[i]
+    if i == mid then 1 - k[i] else -k[i]
 
+# Returns the convolution of two discrete signals as a discrete signal.
+# (Float32Array) -> (Float32Array) -> (Float32Array)
 fft_convolve = (kernel) -> (d1) ->
   n = d1.length
 
@@ -64,21 +73,23 @@ fft_convolve = (kernel) -> (d1) ->
   convolveReal d1, filter, res
   res
 
-window.lpf = lpf = (cutoff) -> (s1) ->
+# Low pass filter with given cutoff in Hz
+lpf = (cutoff) -> (s1) ->
   s1
   |> discretize
   |> fft_convolve lpf_kernel cutoff, 1000
-  |> -> it.slice 1000
+  |> (.slice 1000)
   |> play_discrete
 
-window.hpf = hpf = (cutoff) -> (s1) ->
+# High pass filter with given cutoff in Hz
+hpf = (cutoff) -> (s1) ->
   s1
   |> discretize
   |> fft_convolve hpf_kernel cutoff, 1000
-  |> -> it.slice 1000
+  |> (.slice 1000)
   |> play_discrete
 
 exports = module.exports = {
   discretize, play_discrete, fft_convolve
-  lpf
+  lpf, hpf
 }
