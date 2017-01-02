@@ -1,6 +1,5 @@
 # The engine is the interface between the dreamland of (t) -> [-1,1]
 # and the real world.
-
 audioCtx = new (window.AudioContext || window.webkitAudioContext)
 sampleRate = audioCtx.sampleRate
 
@@ -63,7 +62,7 @@ class SongEngine
       | 'javascript' => song_src
       | _ => song_src
     catch err
-      @notify \error, "Error while compiling: #{err.message}"
+      @notify \error, "Compile error: #{err.message}"
       throw err
 
     @worker.postMessage action: \update_song, code: compiled
