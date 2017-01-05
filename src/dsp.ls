@@ -29,7 +29,7 @@ play_discrete = (d) ->
       0
   |> crop duration
 
-# Sinc function with a certain cutoff
+# Sinc function for a certain filter size
 sinc = (cutoff) -> (i) ->
   if i == 0 then 2 * cutoff else sin(2 * PI * cutoff * i) / (i * PI)
 
