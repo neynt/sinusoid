@@ -36,7 +36,7 @@ class SongEngine
         duration = msg.data.duration
         frameCount = sampleRate * duration
         self.audio-buffer = audioCtx.createBuffer(num-channels, frameCount, sampleRate)
-        self.channels = [self.audio-buffer.getChannelData(c) for c from 0 til num-channels]
+        self.channels = [new Float32Array(self.audio-buffer.length) for c from 0 til num-channels]
         self.worker.postMessage \
           action: \render_song, sampleRate: sampleRate, channels: self.channels,
           [channel.buffer for channel in self.channels]
@@ -45,7 +45,8 @@ class SongEngine
       case \render_song_done
         self.channels = msg.data.channels
         for c, i in self.channels
-          self.audio-buffer.copyToChannel c, i
+          if self.audio-buffer.copy-to-channel
+            self.audio-buffer.copy-to-channel c, i
         source = audioCtx.createBufferSource()
         source.buffer = self.audio-buffer
         source.connect analyser
@@ -56,7 +57,6 @@ class SongEngine
   render-song: ->
     song_src = @get-song-src()
     lang = @get-lang()
-    console.log lang
     try
       compiled = match lang
       | 'livescript' => livescript.compile song_src
