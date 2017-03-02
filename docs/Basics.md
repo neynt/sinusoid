@@ -1,6 +1,6 @@
 # Basics
 
-Note: All code in this documentation will be in [LiveScript](http://livescript.net/), a language that compiles to JavaScript and has many nice features for functional programming. Sinusoid currently supports LiveScript and JavaScript, but it can be extended to support any language that compiles to JavaScript.
+Note: All code in this documentation will be in [LiveScript](http://livescript.net/), a language that compiles to JavaScript and has nice features for functional programming. Sinusoid currently supports LiveScript and JavaScript, but it can be extended to support any language that compiles to JavaScript.
 
 ## The user interface
 
@@ -19,7 +19,3 @@ return (t) -> Math.sin 2 * Math.PI * 440 * t
 ```
 
 To run this, copy/paste the code into Sinusoid and press the Play button or hit Ctrl+Enter.
-
-## Concepts
-
-A **signal** is a function from time (in seconds) to a number between -1 and 1.

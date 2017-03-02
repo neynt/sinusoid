@@ -2,3 +2,4 @@
 
 * [Introduction](README.md)
 * [Basics](Basics.md)
+* [Signals](Signals.md)
