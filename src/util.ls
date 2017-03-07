@@ -30,9 +30,10 @@ export segment_finder = (things) ->
     objects_at[endpoints[min]]
 
 # Decorator that memoizes functions.
-# Use it to cache the result of functions which:
-#   - don't have a large keyspace
-#   - are expensive to compute
+# Use it to cache the result of functions which are:
+#   - pure
+#   - often called with the same parameters
+#   - expensive to compute
 export memo_fn = (f) ->
   memo = {}
   ->

@@ -149,7 +149,7 @@ export diatonic_triad = (key, root) ->
   (key_from_deltas deltas) (key root)
 
 # A4: 69
-melody = (instrument, notes) ->
+export melody = (instrument, notes) ->
   accum = 0
   res = []
   for [d, n] in notes

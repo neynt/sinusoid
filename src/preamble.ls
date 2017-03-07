@@ -16,6 +16,12 @@ window.music = require './music.ls'
 # Useful for live coding or composing if you're familiar with most things
 # by name already.
 window.import_all = ->
-  for module in [window.shapes, window.signals, window.dsp, window.instruments, window.music]
+  for module in [
+    window.util,
+    window.shapes,
+    window.signals,
+    window.dsp,
+    window.instruments,
+    window.music]
     for object of module
       window[object] = module[object]
