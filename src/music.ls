@@ -1,6 +1,7 @@
 # Render melody
 # combines collection of [offset, signal] pairs
 # to a single signal at a particular bpm
+{dur} = util
 {crop, delay} = signals
 
 export render_notes = (bpm, notes) ->
@@ -90,7 +91,7 @@ differences = (a) ->
 prefix_sums = (a) ->
   res = [0]
   for i from 0 til a.length
-    res.push a[i] + res[-1 til][0]
+    res.push a[i] + res[-1 til].0
   res
 
 export roman_chord = do ->
@@ -104,7 +105,7 @@ export roman_chord = do ->
     vi: 6
     vii: 7
   from_roman = (roman) ->
-    roman_numerals[roman.toLowerCase()]
+    roman_numerals[roman.toLowerCase!]
 
   (key, name) ->
     groups = roman_chord_regex.exec(name)
@@ -113,7 +114,7 @@ export roman_chord = do ->
     var quality, diminished, augmented, seventh
     base_name = groups.1
 
-    if base_name == base_name.toLowerCase()
+    if base_name == base_name.toLowerCase!
       quality = \minor
     else
       quality = \major

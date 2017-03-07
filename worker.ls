@@ -51,7 +51,7 @@ self.onmessage = (msg) ->
       throw err
 
     self.num-channels = song.length
-    self.song-duration = song.reduce(((acc, cur) -> Math.max(acc, dur(cur))), 0)
+    self.song-duration = song.reduce ((acc, cur) -> Math.max acc, util.dur cur), 0
     self.duration = if song-duration <= 600 then song-duration else 2
     self.postMessage action: \update_song_done, num-channels: num-channels, duration: duration
   case \render_song

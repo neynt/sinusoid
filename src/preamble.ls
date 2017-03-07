@@ -3,7 +3,7 @@
 # The sinusoid "standard library".
 
 window.prelude = require 'prelude-ls'
-require './util.ls'
+window.util = require './util.ls'
 #window.fft = require './fft-ls.ls'
 window.fft = require './fft.js'
 window.shapes = require './shapes.ls'

@@ -1,13 +1,11 @@
 # Utilities.
-window.util = {}
-
-window.dur = (s1) -> s1.duration ? Infinity
+export dur = (s1) -> s1.duration ? Infinity
 
 # Given a list of intervals and associated objects,
 # returns a function that allows querying of
 # "give me all objects whose intervals contains this point" in log(n) time.
 # things: 3-tuples of [begin, end, object]
-window.util.segment_finder = (things) ->
+export segment_finder = (things) ->
   objects_at = {}
   for [begin, end, _] in things
     objects_at[begin] = []
@@ -35,7 +33,7 @@ window.util.segment_finder = (things) ->
 # Use it to cache the result of functions which:
 #   - don't have a large keyspace
 #   - are expensive to compute
-window.memo_fn = (f) ->
+export memo_fn = (f) ->
   memo = {}
   ->
     args = JSON.stringify(Array.prototype.slice.call arguments)
@@ -46,7 +44,7 @@ window.memo_fn = (f) ->
 # Decorator that memoizes a signal using a Float64Array by rounding time to the
 # nearest sample.
 # f: (t) -> [-1,1]
-window.memoize = (f) ->
+export memoize = (f) ->
   if dur(f) > 60
     f
   else

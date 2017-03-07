@@ -1,3 +1,4 @@
+{dur} = util
 {delay} = signals
 {crop} = signals
 {sin, cos, PI} = Math

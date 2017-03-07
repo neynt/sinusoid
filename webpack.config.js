@@ -6,22 +6,20 @@ module.exports = {
   output: {
     filename: '[name].entry.js'
   },
+  devtool: 'source-map',
   module: {
-    loaders: [
-      {
-        test: /\.ls$/,
-        loader: 'livescript-loader'
-      },
-      {
-        test: /\.jsx$/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['es2015', 'react']
-        }
+    rules: [{
+      test: /\.ls$/,
+      use: 'livescript-loader'
+    }, {
+      test: /\.jsx$/,
+      loader: 'babel-loader',
+      query: {
+        presets: ['es2015', 'react']
       }
-    ]
+    }]
   },
   resolve: {
-    extensions: ['', '.js', '.json', '.coffee']
+    extensions: ['.js', '.json', '.coffee']
   }
 };

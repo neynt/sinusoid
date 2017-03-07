@@ -1,6 +1,8 @@
 # Contains all logic that generates and processes signals.
 # Signals are functions from time to [-1,1] with an optional duration.
 
+{dur} = util
+
 # Pure tones.
 export sine = (f) ->
   (t) -> Math.sin(2 * Math.PI * f(t))
