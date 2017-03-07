@@ -3,7 +3,7 @@
 # to a single signal at a particular bpm
 {crop, delay} = signals
 
-render_notes = (bpm, notes) ->
+export render_notes = (bpm, notes) ->
   notes = [[ofs * 60 / bpm, s] for [ofs, s] in notes]
   seg_find = util.segment_finder([[ofs, ofs + dur(s), [ofs, s |> delay ofs]] for [ofs, s] in notes])
   maxtime = Math.max.apply(null, [ofs + dur(s) for [ofs, s] in notes])
@@ -15,7 +15,7 @@ render_notes = (bpm, notes) ->
   |> crop maxtime
 
 # Converts a note from scientific pitch notation to MIDI integer
-note = do ->
+export note = do ->
   note2semis =
     C: 0
     D: 2
@@ -33,7 +33,7 @@ note = do ->
 # A temperament maps note index to fundamental frequency.
 # e.g.
 # equal temperament: 69 -> 440, 81 -> 880
-temperament =
+export temperament =
   equal: (note) -> 440 * Math.pow(2, (n - 69) / 12)
 
 # A key maps note index relative to the root to an
@@ -42,7 +42,7 @@ temperament =
 # A4 major: 0 -> 69, 1 -> 71
 # TODO: make this faster
 mod = (n, m) -> ((n % m) + m) % m
-key_from_deltas = (deltas) -> (root) -> (n) ->
+export key_from_deltas = (deltas) -> (root) -> (n) ->
   ans = root
   cur_idx = 0
   while cur_idx < n
@@ -53,7 +53,7 @@ key_from_deltas = (deltas) -> (root) -> (n) ->
     ans -= deltas[mod(cur_idx, deltas.length)]
   ans
 
-key =
+export key =
   major: key_from_deltas [2 2 1 2 2 2 1]
   natural_minor: key_from_deltas [2 1 2 2 1 2 2]
   harmonic_minor: key_from_deltas [2 1 2 2 1 3 1]
@@ -74,12 +74,12 @@ chord_deltas =
   diminished_triad: [3 3 6]  # iiio
   augmented_triad: [4 4 4]  # III+
 
-chord = (root, name) ->
+export chord = (root, name) ->
   lower_name = name.toLowerCase()
   if chord_deltas[name]?
     (key_from_deltas chord_deltas[name]) root
 
-diatonic_chords =
+export diatonic_chords =
   major: <[ I ii iii IV V vi viio ]>
   natural_minor: <[ i iio III iv v VI VII ]>
 
@@ -93,7 +93,7 @@ prefix_sums = (a) ->
     res.push a[i] + res[-1 til][0]
   res
 
-roman_chord = window.rc = do ->
+export roman_chord = do ->
   roman_chord_regex = /^(i|ii|iii|iv|v|vi|vii)([67]?)([+o]?)$/i
   roman_numerals =
     i: 1
@@ -135,7 +135,7 @@ roman_chord = window.rc = do ->
 
     (key_from_deltas deltas) (key root)
 
-diatonic_triad = (key, root) ->
+export diatonic_triad = (key, root) ->
   arr = [
     key root
     key root + 2
@@ -156,17 +156,9 @@ melody = (instrument, notes) ->
     accum += d
   res
 
-drum_machine = (subdiv, beatline, mapping) ->
+export drum_machine = (subdiv, beatline, mapping) ->
   res = []
   for c, i in beatline
     if mapping[c]?
       res.push [i * subdiv, mapping[c]]
   res
-
-exports = module.exports = {
-  render_notes, note,
-  key, key_from_deltas, temperament,
-  diatonic_chords,
-  chord, roman_chord, diatonic_triad,
-  drum_machine
-};

@@ -179,7 +179,7 @@ function transformBluestein(real, imag) {
 /*
  * Computes the circular convolution of the given real vectors. Each vector's length must be the same.
  */
-window.convolveReal = function convolveReal(x, y, out) {
+function convolveReal(x, y, out) {
     if (x.length != y.length || x.length != out.length)
         throw "Mismatched lengths";
     var zeros = new Array(x.length);
@@ -215,3 +215,5 @@ function convolveComplex(xreal, ximag, yreal, yimag, outreal, outimag) {
         outimag[i] = ximag[i] / n;
     }
 }
+
+module.exports = { convolveReal };

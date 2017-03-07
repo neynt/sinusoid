@@ -2,15 +2,15 @@
 # Signals are functions from time to [-1,1] with an optional duration.
 
 # Pure tones.
-sine = (f) ->
+export sine = (f) ->
   (t) -> Math.sin(2 * Math.PI * f(t))
   |> crop dur f
 
-cosine = (f) ->
+export cosine = (f) ->
   (t) -> Math.cos(2 * Math.PI * f(t))
   |> crop dur f
 
-triangle = (f) ->
+export triangle = (f) ->
   (t) ->
     phase = (f(t) % 1 + 1) % 1
     if phase < 0.25 then phase * 4
@@ -18,45 +18,45 @@ triangle = (f) ->
     else phase * 4 - 4
   |> crop dur f
 
-saw = (f) ->
+export saw = (f) ->
   (t) ->
     phase = (f(t) % 1 + 1) % 1
     phase * 2 - 1
   |> crop dur f
 
-square = (f) ->
+export square = (f) ->
   (t) -> if ((f(t) % 1 + 1) % 1) < 0.5 then -1 else 1
   |> crop dur f
 
-solid = (freq) ->
+export solid = (freq) ->
   (t) -> freq * t
 
-vibrato = (freq1, freq2, freqV) ->
+export vibrato = (freq1, freq2, freqV) ->
   freq_mid = (freq1 + freq2) / 2
   Vcos = sine solid freqV
   Vamp = -(freq_mid - freq1) / (freqV * Math.PI * 2)
   (t) -> freq_mid * t + Vamp * Vcos(t)
 
 # Chirps: Pure tones that change frequency smoothly
-chirp_lin = (freq1, freq2, T) ->
+export chirp_lin = (freq1, freq2, T) ->
   (t) -> (freq1 * t + (freq2 - freq1) / (2 * T) * t * t)
   |> crop T
 
-chirp_exp = (freq1, freq2, T) ->
+export chirp_exp = (freq1, freq2, T) ->
   (t) ->
     freq1 * T * Math.pow(freq2/ freq1, t/T) /
     (Math.log freq2 / freq1)
   |> crop T
 
 # White noise
-noise = -> (t) -> Math.random() * 2 - 1
+export noise = -> (t) -> Math.random() * 2 - 1
 
-fade_in = (T) ->
+export fade_in = (T) ->
   (t) ->
     t / T
   |> crop T
 
-fade_out = (T) ->
+export fade_out = (T) ->
   (t) ->
     1 - t / T
   |> crop T
@@ -64,7 +64,7 @@ fade_out = (T) ->
 # ADSR envelope
 # params are [attack, delay, sustain, release] x [level, time]
 # crop for efficiency
-adsr = (at, al, dt, sl, st, rt) ->
+export adsr = (at, al, dt, sl, st, rt) ->
   (t) ->
     if t <= at
       return t / at * al
@@ -81,11 +81,11 @@ adsr = (at, al, dt, sl, st, rt) ->
       return 0
   |> crop at + dt + st + rt
 
-soft_edges = (s1, soften_time=0.01) ->
+export soft_edges = (s1, soften_time=0.01) ->
   adsr(soften_time, 1, 0, 1, dur(s1) - 2*soften_time, soften_time)
   |> envelope s1
 
-tremolo = (freq, amp) ->
+export tremolo = (freq, amp) ->
   baseline = 1 - amp/2
   Vcos = cosine(solid(freq))
   (t) -> baseline + Vcos(t) * amp/2
@@ -94,25 +94,25 @@ tremolo = (freq, amp) ->
 # These functions return processors.
 
 # increase/decrease volume
-gain = (mult) -> (s1) ->
+export gain = (mult) -> (s1) ->
   (t) -> mult * s1(t)
   |> crop dur(s1)
 
-gain_db = (db) ->
+export gain_db = (db) ->
   gain Math.pow(10, db/20)
 
 # delay the start point
-delay = (delay) -> (s1) ->
+export delay = (delay) -> (s1) ->
   (t) -> if t >= delay then s1(t - delay) else 0
   |> crop Math.max (dur s1) + delay, 0
 
 # chop off pre-time domain
-chop = (s1) ->
+export chop = (s1) ->
   (t) -> if t < 0 then 0 else s1(t)
   |> crop dur s1
 
 # limit the duration
-crop = (duration) -> (s1) ->
+export crop = (duration) -> (s1) ->
   if dur(s1) == duration
     s1
   else
@@ -121,11 +121,11 @@ crop = (duration) -> (s1) ->
     res
 
 # sum two signals
-plus = (s1, s2) ->
+export plus = (s1, s2) ->
   (t) -> s1(t) + s2(t)
   |> crop Math.max (dur s1), (dur s2)
 
-pluses = (ss) ->
+export pluses = (ss) ->
   (t) ->
     accum = 0
     for s in ss
@@ -134,13 +134,13 @@ pluses = (ss) ->
   |> crop Math.max.apply(null, [dur(s) for s in ss])
 
 # pointwise multiply a signal with another signal
-envelope = (s1) -> (s2) ->
+export envelope = (s1) -> (s2) ->
   (t) -> s1(t) * s2(t)
   |> crop Math.min(dur(s1), dur(s2))
 
 # muh convolutions
 # good for filters and reverb
-convolve = (sc) -> (s1) ->
+export convolve = (sc) -> (s1) ->
   (t) ->
     accum = 0
     for x, i in sc
@@ -148,15 +148,6 @@ convolve = (sc) -> (s1) ->
     accum
   |> crop dur s1
 
-average_window = (T) ->
+export average_window = (T) ->
   num_samples = Math.floor(T * engine.sampleRate)
   [1 / num_samples] * num_samples
-
-exports = module.exports = {
-  sine, cosine, triangle, saw, square, solid,
-  vibrato, chirp_lin, chirp_exp, noise,
-  fade_in, fade_out,
-  adsr, soft_edges, tremolo, gain, gain_db,
-  delay, chop, crop, plus, pluses, envelope,
-  convolve, average_window
-}

@@ -7,27 +7,27 @@
 
 # Other utilities that represent domain musical knowledge go here.
 # midi number to frequency
-midi = (n) -> 440 * Math.pow(2, (n - 69) / 12)
+export midi = (n) -> 440 * Math.pow(2, (n - 69) / 12)
 
 # Instruments:
 # midi number -> signal
-blip = (base_func) -> (pitch, duration = 0.1) ->
+export blip = (base_func) -> (pitch, duration = 0.1) ->
   base_func vibrato (midi pitch), (midi pitch + 0.1), 7
   |> envelope adsr(0.008, 1.0, 0.1, 0.3, duration, 0.3)
-  |> envelope tremolo(6, 0.5)
+  #|> envelope tremolo(6, 0.5)
   |> gain_db -10
 
-bloop = blip sine
-bleep = blip triangle
-bliip = blip saw
-bzzp = blip square
+export bloop = blip sine
+export bleep = blip triangle
+export bliip = blip saw
+export bzzp = blip square
 
-tsch = ->
+export tsch = ->
   noise()
   |> gain 0.05
   |> envelope adsr(0.015, 1.0, 0.15, 0.0, 0.2, 0.0)
 
-snare = do ->
+export snare = do ->
   snare_triangle = triangle chirp_exp 195, 20, 0.2
   |> envelope adsr(0.003, 1.0, 0.04, 0.1, 0, 0.3)
   |> gain_db -15
@@ -38,16 +38,11 @@ snare = do ->
 
   memoize plus(snare_triangle, snare_noise)
 
-bass_drum = triangle chirp_exp 80, 15, 0.2
+export kick = triangle chirp_exp 80, 15, 0.2
 |> envelope adsr(0.001, 1.0, 0.12, 0, 0, 0)
 |> gain_db -5
 
-guitar = (note) ->
+export guitar = (note) ->
   triangle solid midi note
   |> envelope adsr(0.002, 1.0, 0.05, 0.3, 0.1, 0.3)
   |> gain_db -5
-
-exports = module.exports = {
-  midi, bloop, bleep, bliip, bzzp,
-  tsch, snare, bass_drum, guitar
-};

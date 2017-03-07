@@ -5,7 +5,7 @@
 # Converts a continuous signal to a discrete signal (i.e. array)
 # by sampling at a rate of engine.sampleRate.
 # signal -> Float64Array
-discretize = (s1) ->
+export discretize = (s1) ->
   if (dur s1) > 600
     throw message: "error: signal is too long to discretize"
 
@@ -20,7 +20,7 @@ discretize = (s1) ->
 
 # Wraps a discrete signal in a function.
 # Float64Array -> signal
-play_discrete = (d) ->
+export play_discrete = (d) ->
   duration = (d.length - 1) / engine.sampleRate
   (t) ->
     if 0 <= t < duration then
@@ -35,8 +35,8 @@ sinc = (cutoff) -> (i) ->
 
 # DSP window functions
 # M: the size of the filter.
-# Higher M means sharper frequency response but slower.
-window =
+# Higher M means sharper frequency response but slower processing.
+wnd =
   hamming: (M) ->
     (i) -> 0.54 - 0.46 * cos(2 * PI * i / M)
   blackman: (M) ->
@@ -46,9 +46,11 @@ window =
 lpf_kernel = (cutoff, M) ->
   cutoff_d = cutoff / engine.sampleRate
   my_sinc = sinc cutoff_d
-  my_window = window.blackman M
+  my_window = wnd.blackman M
   f = (i) ->
     (my_sinc i - M / 2) * (my_window i)
+
+  # map f, [0 til M+1]
   for i from 0 til M+1
     f i
 
@@ -70,11 +72,14 @@ fft_convolve = (kernel) -> (d1) ->
     filter[i] = ir
 
   res = new Float32Array n
-  convolveReal d1, filter, res
+  fft.convolveReal d1, filter, res
   res
 
+# ALL H Y P E |>|\
+# THE P I P E |>|/
+
 # Low pass filter with given cutoff in Hz
-lpf = (cutoff) -> (s1) ->
+export lpf = (cutoff) -> (s1) ->
   s1
   |> discretize
   |> fft_convolve lpf_kernel cutoff, 1000
@@ -82,14 +87,9 @@ lpf = (cutoff) -> (s1) ->
   |> play_discrete
 
 # High pass filter with given cutoff in Hz
-hpf = (cutoff) -> (s1) ->
+export hpf = (cutoff) -> (s1) ->
   s1
   |> discretize
   |> fft_convolve hpf_kernel cutoff, 1000
   |> (.slice 1000)
   |> play_discrete
-
-exports = module.exports = {
-  discretize, play_discrete, fft_convolve
-  lpf, hpf
-}
